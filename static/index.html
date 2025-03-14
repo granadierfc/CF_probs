@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Codeforces Solved Problems Filter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Filter Solved Problems</h1>
+        <form id="filter-form">
+            <label for="handle">Codeforces Handle:</label>
+            <input type="text" id="handle" name="handle" required>
+
+            <label for="tags">Tags (comma-separated):</label>
+            <input type="text" id="tags" name="tags">
+
+            <label for="min_rating">Minimum Rating:</label>
+            <input type="number" id="min_rating" name="min_rating" min="0">
+
+            <button type="submit">Search</button>
+        </form>
+
+        <h2>Results:</h2>
+        <ul id="results"></ul>
+    </div>
+
+    <script>
+        document.getElementById('filter-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const handle = document.getElementById('handle').value;
+            const tags = document.getElementById('tags').value;
+            const minRating = document.getElementById('min_rating').value;
+
+            const queryParams = new URLSearchParams({
+                handle: handle,
+                tags: tags,
+                min_rating: minRating
+            });
+
+            fetch(`/api/solved_problems?${queryParams}`)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsList = document.getElementById('results');
+                    resultsList.innerHTML = '';
+
+                    if (data.problems.length === 0) {
+                        resultsList.innerHTML = '<li>No problems found.</li>';
+                    } else {
+                        data.problems.forEach(problem => {
+                            const listItem = document.createElement('li');
+                            const link = document.createElement('a');
+                            link.href = problem.url;
+                            link.textContent = problem.name;
+                            link.target = '_blank';
+                            listItem.appendChild(link);
+                            resultsList.appendChild(listItem);
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching problems:', error);
+                });
+        });
+    </script>
+</body>
+</html>
